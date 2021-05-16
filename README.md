@@ -7,6 +7,5 @@ https://tech.xing.com/a-reason-for-unexplained-connection-timeouts-on-kubernetes
 
 #### Building
 ```bash
-$ dep ensure
 $ go build
 ```

@@ -9,7 +9,7 @@ import (
 	"time"
 
 	flags "github.com/jessevdk/go-flags"
-	"github.com/maxlaverse/snat-race-conn-test/lib"
+	"github.com/maxlaverse/snat-race-conn-test/pkg"
 )
 
 var opts struct {
@@ -39,9 +39,9 @@ func main() {
 	measureCh := make(chan int64, 1024)
 
 	log.Printf("Preparing %d requesters with a %d us interval on %s", opts.Concurrency, opts.Interval, opts.URL)
-	requesters := []*lib.Requester{}
+	requesters := []*pkg.Requester{}
 	for i := 0; i < opts.Concurrency; i++ {
-		requesters = append(requesters, lib.NewRequester(opts.Interval, opts.Timeout, opts.URL, measureCh))
+		requesters = append(requesters, pkg.NewRequester(opts.Interval, opts.Timeout, opts.URL, measureCh))
 	}
 
 	log.Println("Starting requesters")
@@ -51,7 +51,7 @@ func main() {
 
 	// Measuring
 	log.Println("Recording")
-	measures := lib.Measure{}
+	measures := pkg.Measure{}
 	ticket := time.NewTicker(time.Second * time.Duration(opts.PrintInterval))
 Loop:
 	for {
@@ -72,7 +72,7 @@ Loop:
 			fmt.Printf("%10s: %5dms\n", "Average", avg/1000000.0)
 			fmt.Printf("%10s: %5dreq/s\n", "Rate", len(measures)/opts.PrintInterval)
 
-			measures = lib.Measure{}
+			measures = pkg.Measure{}
 		case <-stopSignal:
 			break Loop
 		}

@@ -16,7 +16,7 @@ func main() {
 
 	app := &cli.App{
 		Name:  "snat-race-conn-test",
-		Usage: "Testing tools to reproduce a race condition on SNAT'ed connections",
+		Usage: "Test program to reproduce a race condition on SNAT'ed connections",
 		Commands: []*cli.Command{
 			pkg.NewServerCommand(),
 			pkg.NewClientCommand(),

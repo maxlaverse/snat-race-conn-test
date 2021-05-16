@@ -65,6 +65,7 @@ func runServer(opts ServerOpts) error {
 	// Can't remember why this was needed
 	rand.Seed(time.Now().Unix())
 
+	log.Println("Ready to accept connections!")
 	var wg sync.WaitGroup
 	for i := 0; i < opts.GoRoutines; i++ {
 		wg.Add(1)

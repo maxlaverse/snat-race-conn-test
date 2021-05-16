@@ -102,6 +102,7 @@ func runClient(opts ClientOpts) error {
 	defer stop()
 
 	// Concurrent dialer
+	log.Println("Starting Go routines!")
 	requestDurationCh := make(chan float64, 1024)
 	var reqTotal int64
 	var errTotal int64

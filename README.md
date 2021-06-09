@@ -23,12 +23,12 @@ The likelihood for observing the issue increases with the number of cores on the
 
 ### Prepare the destination server
 Start a container that listens for tcp connections:
-```bash
+```shellsession
 $ sudo docker run -p8080:8080 -ti maxlaverse/snat-race-conn-test server
 ```
 
 If you try to connect from another server, the connection should work and immediately be closed:
-```bash
+```shellsession
 $ nc -vv <ip-of-dst-server> 8080
 Connection to <ip-of-dst-server> 8080 port [tcp/http-alt] succeeded!
 ```
@@ -36,7 +36,7 @@ Connection to <ip-of-dst-server> 8080 port [tcp/http-alt] succeeded!
 ### Prepare the util container on the source server
 
 Start an Alpine container on the *source server*, install `conntrack` and `iptables`:
-```bash
+```shellsession
 $ sudo docker run --privileged --net=host -ti alpine:latest
 
 $ apk add conntrack-tools iptables
@@ -57,7 +57,7 @@ OK: 9 MiB in 23 packages
 
 This containers requires access to the host network interface and has to be privileged in order to interact with it. 
 From this container, have a first look at the conntrack statistics:
-```
+```shellsession
 $ conntrack -S
 cpu=0   	found=0 invalid=0 ignore=2 insert=0 insert_failed=0 drop=0 early_drop=0 error=0 search_restart=0
 cpu=1   	found=0 invalid=0 ignore=0 insert=0 insert_failed=0 drop=0 early_drop=0 error=0 search_restart=0
@@ -76,7 +76,7 @@ cpu=10   	found=0 invalid=0 ignore=6 insert=0 insert_failed=0 drop=0 early_drop=
 This command was executed after a reboot. Therefore all `insert_failed` counters are at 0.
 
 From this container, you can also check that the Docker masquerading iptables rule is present:
-```
+```shellsession
 $ iptables-save
 [...]
 -A POSTROUTING -s 172.17.0.0/16 ! -o docker0 -j MASQUERADE
@@ -85,7 +85,7 @@ $ iptables-save
 
 ### Run the test containers on the source server
 Start two containers that continuously establish connections to the destination server:
-```bash
+```shellsession
 $ sudo docker run -ti maxlaverse/snat-race-conn-test client --remote-addr <ip-of-dst-server>:8080
 
 $ sudo docker run -ti maxlaverse/snat-race-conn-test client --remote-addr <ip-of-dst-server>:8080
@@ -117,7 +117,7 @@ Requests since start (error/total):     1/1580
 ```
 
 After a couple of minutes, press Ctrl+C to stop the two test containers and note down the amount of errors:
-```bash
+```shellsession
 Container 1: Requests since start (error/total):  1439/49571
 Container 2: Requests since start (error/total):   829/51927
 
@@ -125,8 +125,8 @@ Container 2: Requests since start (error/total):   829/51927
 ```
 
 Have another look at the conntrack statistics from the util container. You can see that some `insert_failed` counters increased:
-```
-```bash
+
+```shellsession
 $ conntrack -S
 cpu=0   	found=4601 invalid=2157 ignore=0 insert=0 insert_failed=74 drop=74 early_drop=0 error=0 search_restart=100
 cpu=1   	found=7545 invalid=3952 ignore=0 insert=0 insert_failed=175 drop=175 early_drop=0 error=0 search_restart=159
@@ -145,7 +145,7 @@ cpu=10  	found=11154 invalid=6175 ignore=0 insert=0 insert_failed=231 drop=231 e
 ### Trying out a mitigation
 
 In the util container, save the iptables rules:
-```bash
+```shellsession
 $ iptables-save > dump
 ```
 
@@ -156,12 +156,12 @@ Append `--random-fully` to the masquerading rule:
 ```
 
 Reload the rules:
-```bash
+```shellsession
 $ iptables-restore < dump
 ```
 
 Now restart the two test containers and stop them after the same amount of requests than the first run:
-```bash
+```
 Container 1: Requests since start (error/total):    45/50210
 Container 2: Requests since start (error/total):    57/50160
 
@@ -176,11 +176,11 @@ You can run the same test on Kubernetes. Your test Pods need to be collocated on
 ## Building the project
 
 The test program is written using Go module. You need at least Go 1.16 to compile it:
-```bash
+```shellsession
 $ go build
 ```
 
 You can build you own Docker image with:
-```bash
+```shellsession
 $ sudo docker build -t testimage .
 ```
